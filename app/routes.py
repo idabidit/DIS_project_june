@@ -1,8 +1,8 @@
 from flask import Blueprint
 
-main = Blueprint("main", __name__)
+bp = Blueprint("main", __name__)
 
 
-@main.route("/")
-def index():
-    return "Welcome to Pet Tinder!"
+@bp.route("/")
+def home():
+    return "🐾 Hello from Pet Tinder!"
