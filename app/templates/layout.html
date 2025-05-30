@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Pet Tinder{% endblock %}</title>
+</head>
+<body>
+    <nav>
+        <a href="{{ url_for('main.home') }}">Home</a> |
+        {% if session.get('caretaker_id') %}
+            <strong>Logged in as: {{ session.get('caretaker_name') }}</strong> |
+            <a href="{{ url_for('main.register_pet') }}">Register Pet</a> |
+            <a href="{{ url_for('main.view_owned_pets') }}">View Pets</a> |
+            <form action="{{ url_for('main.logout_caretaker') }}" method="get" style="display:inline;">
+                <button type="submit">Logout</button>
+            </form>
+        {% else %}
+            <a href="{{ url_for('main.register_caretaker') }}">Register Caretaker</a> |
+            <a href="{{ url_for('main.login_caretaker') }}">Login Caretaker</a>
+        {% endif %}
+    </nav>
+    <hr>
+    {% block content %}{% endblock %}
+</body>
+</html>

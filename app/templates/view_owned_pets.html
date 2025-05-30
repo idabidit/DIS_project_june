@@ -1,0 +1,24 @@
+{% extends 'layout.html' %}
+{% block title %}Your Pets{% endblock %}
+{% block content %}
+<h2>Your Registered Pets 🐾</h2>
+
+{% if pets %}
+    <ul style="list-style: none; padding: 0;">
+    {% for pet in pets %}
+        <li style="margin-bottom: 25px; border: 1px solid #ccc; padding: 15px;">
+            <img src="{{ pet[5] }}" alt="{{ pet[1] }}" style="height:150px;"><br><br>
+            <strong>{{ pet[1] }}</strong><br>
+            Age: {{ pet[2] }}<br>
+            Species: {{ pet[3] }}<br>
+            <em>{{ pet[4] }}</em><br><br>
+            <form method="POST" action="{{ url_for('main.delete_pet', pet_id=pet[0]) }}">
+                <button type="submit" onclick="return confirm('Are you sure you want to delete this pet?')">Delete</button>
+            </form>
+        </li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>You haven’t registered any pets yet.</p>
+{% endif %}
+{% endblock %}

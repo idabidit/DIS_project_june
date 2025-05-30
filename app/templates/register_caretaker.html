@@ -1,0 +1,31 @@
+{% extends 'layout.html' %}
+{% block title %}Register Caretaker{% endblock %}
+{% block content %}
+<h2>Register Caretaker</h2>
+
+{% if error %}
+<div style="background-color: #ffe0e0; padding: 10px; border: 1px solid red; margin-bottom: 15px;">
+    {{ error | safe }}
+</div>
+{% endif %}
+
+<form method="POST">
+    <label>Username:</label><br>
+    <input type="text" name="username" required><br><br>
+
+    <label>Name (display):</label><br>
+    <input type="text" name="name" required><br><br>
+
+    <label>Password:</label><br>
+    <input type="password" name="password" required><br><br>
+
+    <label>Area:</label><br>
+    <select name="area" required>
+        {% for area in areas %}
+        <option value="{{ area[0] }}">{{ area[1] }}</option>
+        {% endfor %}
+    </select><br><br>
+
+    <button type="submit">Register</button>
+</form>
+{% endblock %}

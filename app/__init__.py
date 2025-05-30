@@ -3,6 +3,7 @@ from flask import Flask
 
 def create_app():
     app = Flask(__name__)
+    app.config['SECRET_KEY'] = 'fc089b9218301ad987914c53481bff04'
 
     from .routes import bp
 
