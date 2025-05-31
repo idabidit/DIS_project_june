@@ -1,0 +1,21 @@
+<!doctype html>
+<title>Pets</title>
+
+<form method="GET" action="/view_pets">
+    {% for pet in pets %}
+        <OPTION value={{pets.id}}>{{pet.name}}</option>
+    {% endfor %}
+    </SELECT>
+    <input type="submit" value="Add" class="btn">
+</form>
+
+<table>
+    <tr>
+        <th>pets</th>
+    </tr>
+    {% for pet in pets %}
+        <tr>
+        <td>{{ pet.name }}</td> <td>{{ pet.id }}</td>
+        </tr>
+    {% endfor %}
+</table>

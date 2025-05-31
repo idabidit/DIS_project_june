@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Caretakers</title>
+    <style>
+        table { border-collapse: collapse; margin: 20px; }
+        th, td { padding: 10px; border: 1px solid #ddd; }
+        th { background-color: #f5f5f5; }
+    </style>
+</head>
+<body>
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Area</th>
+        </tr>
+        {% for caretaker in caretakers %}
+            <tr>
+                <td>{{ caretaker.name }}</td>
+                <td>{{ caretaker.area }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
