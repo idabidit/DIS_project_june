@@ -106,14 +106,14 @@ def register_pet():
 
         # Handle uploaded file
         file = request.files["image"]
-        if file:
-            filename = secure_filename(file.filename)
-            unique_name = f"{uuid.uuid4().hex}_{filename}"
-            file_path = os.path.join(UPLOAD_FOLDER, unique_name)
-            file.save(file_path)
-            image_url = f"/{file_path}"
-        else:
+        if not file:
             return "Image required", 400
+        
+        filename = secure_filename(file.filename)
+        unique_name = f"{uuid.uuid4().hex}_{filename}"
+        file_path = os.path.join(UPLOAD_FOLDER, unique_name)
+        file.save(file_path)
+        image_url = f"/{file_path}"
 
         cur.execute("""
             INSERT INTO pets (name, age, species, gender, image_url, description, caretaker_id)
@@ -185,8 +185,17 @@ def view_owned_pets():
     cur.close()
     conn.close()
 
-    return render_template("view_owned_pets.html", pets=pets)
+    # Convert result to list of dicts
+    # pet_list = []
+    # for pet in pets:
+    #     pet_list.append({
+    #         "id": pet[0],
+    #         "name": pet[1],
+    #         "age": pet[2],
+    #         "species": pet[3],
+    #         "gender": pet[4],
+    #         "description": pet[5],
+    #         "image_url": pet[6]
+    #     })
 
-@bp.route("/test_image")
-def test_image():
-    return '<img src="/static/uploads/3a82384b4c4f4fbda839ab1527b1cbab_FISH.jpg">'
+    return render_template("view_owned_pets.html", pets=pets)
