@@ -2,7 +2,7 @@
 
 Pet Tinder!
 
-Create an account, add your pet and search for potentia playmates.
+Create an account, add your pet and search for potential playmates.
 
 ## Requirements
 [Docker](https://www.docker.com/) installed on your machine.
