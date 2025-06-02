@@ -1,0 +1,33 @@
+{% extends 'layout.html' %}
+{% block title %}Matches for Pet #{{ pet_name }}{% endblock %}
+{% block content %}
+<h2>Matches</h2>
+
+{% if matches %}
+<div class="container">
+  <div class="row g-4">
+    {% for pet in matches %}
+    <div class="col-12 col-sm-6 col-md-4 col-lg-3" style="min-width: 250px;">
+      <div class="card h-100 text-center">
+        <img src="{{ pet[4] }}" class="card-img-top" alt="Pet image" style="object-fit: cover; height: 200px;">
+        <div class="card-body d-flex flex-column">
+          <h5 class="card-title" style="font-size: 1.5rem;">
+            {{ pet[1] }}
+          </h5>
+          <p class="card-text">
+            Age: {{ pet[2] }}<br>
+            Gender: {{ pet[6] }}<br>
+            Species: {{ pet[5] }}<br>
+            Owner: {{ pet[7] }}<br>
+            <em>{{ pet[3] }}</em>
+          </p>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% else %}
+<p>No matching pets found.</p>
+{% endif %}
+{% endblock %}

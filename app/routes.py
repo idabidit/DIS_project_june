@@ -265,3 +265,62 @@ def view_owned_pets():
         "view_owned_pets.html",
         pets=pets
     )
+
+@bp.route("/find_matches/<int:pet_id>")
+def find_matches(pet_id):
+    if "caretaker_id" not in session:
+        return redirect(url_for("main.login_caretaker"))
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    # Get pet's preferences and caretaker_id for exclusion
+    cur.execute("""
+        SELECT pets.caretaker_id,
+               sp.id AS pref_species,
+               g.id AS pref_gender
+        FROM pets
+        LEFT JOIN species_pref ON pets.id = species_pref.pet_id
+        LEFT JOIN species AS sp ON species_pref.species_id = sp.id
+        LEFT JOIN gender_pref ON pets.id = gender_pref.pet_id
+        LEFT JOIN gender AS g ON gender_pref.gender_id = g.id
+        WHERE pets.id = %s
+    """, (pet_id,))
+
+    pet_info = cur.fetchone()
+    if not pet_info:
+        cur.close()
+        conn.close()
+        return "Pet not found", 404
+
+    pet_caretaker_id, pref_species, pref_gender = pet_info
+
+    # Build query for matching pets
+    query = """
+        SELECT pets.id, pets.name, pets.age, pets.description, pets.image_url,
+               species.name AS pet_species, gender.name AS pet_gender,
+               caretakers.username
+        FROM pets
+        JOIN species ON pets.species = species.id
+        JOIN gender ON pets.gender = gender.id
+        JOIN caretakers ON pets.caretaker_id = caretakers.id
+        WHERE pets.caretaker_id != %s
+    """
+
+    params = [pet_caretaker_id]
+
+    # Add preference filters if set
+    if pref_species:
+        query += " AND pets.species = %s"
+        params.append(pref_species)
+    if pref_gender:
+        query += " AND pets.gender = %s"
+        params.append(pref_gender)
+
+    cur.execute(query, tuple(params))
+    matches = cur.fetchall()
+
+    cur.close()
+    conn.close()
+
+    return render_template("matches.html", matches=matches, pet_name=pet_id)
