@@ -11,4 +11,7 @@
 
     <button type="submit">Login</button>
 </form>
+{% if error %}
+  <div class="alert alert-danger">{{ error }}</div>
+{% endif %}
 {% endblock %}

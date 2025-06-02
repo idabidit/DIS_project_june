@@ -58,6 +58,8 @@ def register_caretaker():
 
 @bp.route("/login_caretaker", methods=["GET", "POST"])
 def login_caretaker():
+    error = None
+
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
@@ -65,18 +67,19 @@ def login_caretaker():
         conn = get_db_connection()
         cur = conn.cursor()
         cur.execute("SELECT id, name FROM caretakers WHERE username = %s AND password = %s", (username, password))
-        result = cur.fetchone()
+        user = cur.fetchone()
         cur.close()
         conn.close()
 
-        if result:
-            session["caretaker_id"] = result[0]
-            session["caretaker_name"] = result[1]  # name used for display
+        if user:
+            user_id, name = user
+            session["caretaker_id"] = user_id
+            session["caretaker_name"] = name
             return redirect(url_for("main.home"))
         else:
-            return "Invalid username or password", 401
+            error = "Wrong username or password"
 
-    return render_template("login_caretaker.html")
+    return render_template("login_caretaker.html", error=error)
 
 @bp.route("/logout_caretaker")
 def logout_caretaker():
