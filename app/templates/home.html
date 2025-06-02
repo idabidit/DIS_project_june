@@ -3,16 +3,16 @@
 {% block content %}
 <h2>Welcome to Pet Tinder 🐾</h2>
 {% if session.get('caretaker_id') %}
-    <p>Welcome back, {{ session.get('caretaker_name') }}!</p>
-    <ul>
-        <li><a href="{{ url_for('main.register_pet') }}">Register a Pet</a></li>
-        <li><a href="{{ url_for('main.view_owned_pets') }}">View All Pets</a></li>
-    </ul>
+  <p>Welcome back, {{ session.get('caretaker_name') }}!</p>
+  <ul>
+    <li><a href="{{ url_for('main.register_pet') }}">Register a Pet</a></li>
+    <li><a href="{{ url_for('main.view_owned_pets') }}">View All Pets</a></li>
+  </ul>
 {% else %}
-    <p>Please register or log in as a caretaker to begin.</p>
-    <ul>
-        <li><a href="{{ url_for('main.register_caretaker') }}">Register as a Caretaker</a></li>
-        <li><a href="{{ url_for('main.login_caretaker') }}">Login as a Caretaker</a></li>
-    </ul>
+  <p>Please register or log in as a caretaker to begin.</p>
+  <ul>
+    <li><a href="{{ url_for('main.register_caretaker') }}">Register as a Caretaker</a></li>
+    <li><a href="{{ url_for('main.login_caretaker') }}">Login as a Caretaker</a></li>
+  </ul>
 {% endif %}
 {% endblock %}

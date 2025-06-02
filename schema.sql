@@ -48,21 +48,21 @@ CREATE TABLE pets (
 
 -- Preferences
 CREATE TABLE species_pref (
-    caretaker_id INT REFERENCES caretakers(id),
+    pet_id INT REFERENCES pets(id),
     species_id INT REFERENCES species(id),
-    PRIMARY KEY (caretaker_id, species_id)
+    PRIMARY KEY (pet_id, species_id)
 );
 
 CREATE TABLE gender_pref (
-    caretaker_id INT REFERENCES caretakers(id),
+    pet_id INT REFERENCES pets(id),
     gender_id INT REFERENCES gender(id),
-    PRIMARY KEY (caretaker_id, gender_id)
+    PRIMARY KEY (pet_id, gender_id)
 );
 
 CREATE TABLE age_pref (
-    caretaker_id INT REFERENCES caretakers(id),
+    pet_id INT REFERENCES pets(id),
     age_range_id INT REFERENCES age_range(id),
-    PRIMARY KEY (caretaker_id, age_range_id)
+    PRIMARY KEY (pet_id, age_range_id)
 );
 
 -- Likes (pet-to-pet)
@@ -96,6 +96,7 @@ INSERT INTO species (name) VALUES
 ('Turtle'), 
 ('Lizard'), 
 ('Horse'), 
+('Cow'), 
 ('Pig');
 
 -- Default areas in Denmark

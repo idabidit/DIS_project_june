@@ -1,0 +1,25 @@
+{% extends 'layout.html' %}
+{% block title %}Edit Preferences for {{ pet[1] }}{% endblock %}
+{% block content %}
+<h2>Edit Preferences for {{ pet[1] }}</h2>
+
+<form method="POST">
+  <label>Preferred Species:</label><br>
+  <select name="pref_species">
+    <option value="" selected>-- None --</option>
+    {% for s in species %}
+    <option value="{{ s[0] }}">{{ s[1] }}</option>
+    {% endfor %}
+  </select><br><br>
+
+  <label>Preferred Gender:</label><br>
+  <select name="pref_gender">
+    <option value="" selected>-- None --</option>
+    {% for g in gender %}
+    <option value="{{ g[0] }}">{{ g[1] }}</option>
+    {% endfor %}
+  </select><br><br>
+
+  <button type="submit">Save Preferences</button>
+</form>
+{% endblock %}

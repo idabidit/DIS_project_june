@@ -137,6 +137,63 @@ def register_pet():
 
     return render_template("register_pet.html", species=species, gender=gender)
 
+@bp.route("/edit_preferences/<int:pet_id>", methods=["GET", "POST"])
+def edit_preferences(pet_id):
+    if "caretaker_id" not in session:
+        return redirect(url_for("main.login_caretaker"))
+
+    caretaker_id = session["caretaker_id"]
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    # Fetch current preferences + basic pet info to verify ownership
+    cur.execute("""
+        SELECT pets.id, pets.name,
+               sp.id AS pref_species,
+               g.id AS pref_gender
+        FROM pets
+        LEFT JOIN species_pref ON pets.id = species_pref.pet_id
+        LEFT JOIN species AS sp ON species_pref.species_id = sp.id
+        LEFT JOIN gender_pref ON pets.id = gender_pref.pet_id
+        LEFT JOIN gender AS g ON gender_pref.gender_id = g.id
+        WHERE pets.id = %s AND pets.caretaker_id = %s
+    """, (pet_id, caretaker_id))
+
+    pet = cur.fetchone()
+    if pet is None:
+        cur.close()
+        conn.close()
+        return "Pet not found or unauthorized", 404
+
+    cur.execute("SELECT id, name FROM species")
+    species = cur.fetchall()
+    cur.execute("SELECT id, name FROM gender")
+    gender = cur.fetchall()
+
+    if request.method == "POST":
+        pref_species = request.form.get("pref_species")
+        pref_gender = request.form.get("pref_gender")
+
+        # Clear old preferences
+        cur.execute("DELETE FROM species_pref WHERE pet_id = %s", (pet_id,))
+        cur.execute("DELETE FROM gender_pref WHERE pet_id = %s", (pet_id,))
+
+        # Insert new preferences if provided
+        if pref_species:
+            cur.execute("INSERT INTO species_pref (pet_id, species_id) VALUES (%s, %s)", (pet_id, pref_species))
+        if pref_gender:
+            cur.execute("INSERT INTO gender_pref (pet_id, gender_id) VALUES (%s, %s)", (pet_id, pref_gender))
+
+        conn.commit()
+        cur.close()
+        conn.close()
+        return redirect(url_for("main.view_owned_pets"))
+
+    cur.close()
+    conn.close()
+    return render_template("edit_preferences.html", pet=pet, species=species, gender=gender)
+
+
 @bp.route("/delete_pet/<int:pet_id>", methods=["POST"])
 def delete_pet(pet_id):
     if "caretaker_id" not in session:
@@ -178,27 +235,33 @@ def view_owned_pets():
     caretaker_id = session["caretaker_id"]
     conn = get_db_connection()
     cur = conn.cursor()
+
     cur.execute("""
-        SELECT pets.id, pets.name, pets.age, species.name, pets.description, pets.image_url
+        SELECT 
+            pets.id, 
+            pets.name, 
+            pets.age, 
+            pets.description, 
+            pets.image_url,
+            gender.name AS pet_gender, 
+            species.name AS pet_species, 
+            G.name AS pref_gender,
+            SP.name AS pref_species
         FROM pets
         JOIN species ON pets.species = species.id
+        JOIN gender ON pets.gender = gender.id
+        LEFT JOIN species_pref ON pets.id = species_pref.pet_id
+        LEFT JOIN species AS SP ON species_pref.species_id = SP.id
+        LEFT JOIN gender_pref ON pets.id = gender_pref.pet_id
+        LEFT JOIN gender AS G ON gender_pref.gender_id = G.id
         WHERE pets.caretaker_id = %s
     """, (caretaker_id,))
     pets = cur.fetchall()
+
     cur.close()
     conn.close()
 
-    # Convert result to list of dicts
-    # pet_list = []
-    # for pet in pets:
-    #     pet_list.append({
-    #         "id": pet[0],
-    #         "name": pet[1],
-    #         "age": pet[2],
-    #         "species": pet[3],
-    #         "gender": pet[4],
-    #         "description": pet[5],
-    #         "image_url": pet[6]
-    #     })
-
-    return render_template("view_owned_pets.html", pets=pets)
+    return render_template(
+        "view_owned_pets.html",
+        pets=pets
+    )
