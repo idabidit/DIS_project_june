@@ -1,7 +1,7 @@
 {% extends 'layout.html' %}
 {% block title %}Your Pets{% endblock %}
 {% block content %}
-<h2>Your Registered Pets 🐾</h2>
+<div class="text-center"><h2>Your Pets 🐾     </h2></div>
 
 {% if pets %}
 <div class="container">
@@ -43,11 +43,10 @@
           </a>
 
           <!-- find matches -->
-          <a href="{{ url_for('main.find_matches', pet_id=pet[0]) }}" 
-             class="btn btn-success w-100 mt-1">
+            <a href="{{ url_for('main.find_matches', pet_id=pet[0]) }}" 
+             class="btn btn-success w-100 mb-2">
             Find Match
-          </a>
-
+            </a>
           <!-- delete -->
           <form method="POST" action="{{ url_for('main.delete_pet', pet_id=pet[0]) }}">
             <button type="submit" class="btn btn-danger w-100" 
