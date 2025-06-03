@@ -15,7 +15,10 @@ This project is run using a Docker image:
 3) Open the web app in a browser: http://127.0.0.1:5000
 *NOTE: If you have changed the port mapping as described above, then you should use the port in your .yml file*
 4) You can either create your own account or use one from the sample data (see below)
-
+5) After registering your caretaker account you can add your pet (All pets need a picture. For testing purposes you can use whatever you want)
+6) Once a pet is created you can add its preferences
+7) Once a pet is registered with its preferences you can start looking for matches. Just click the green 'Find matches' button
+8) PAYDIRT! :)
 
 ## Sample data
 The web app includes some sample data that you are free to look at.
