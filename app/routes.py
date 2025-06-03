@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session
 import psycopg2
 import os
+import re
 
 bp = Blueprint("main", __name__)
 bp.secret_key = os.getenv("FLASK_SECRET", "secret123")
@@ -32,19 +33,25 @@ def register_caretaker():
         password = request.form["password"]
         area_id = request.form["area"]
 
-        try:
-            cur.execute(
-                "INSERT INTO caretakers (username, name, password, area) VALUES (%s, %s, %s, %s)",
-                (username, name, password, area_id)
-            )
-            conn.commit()
-            cur.close()
-            conn.close()
-            return redirect(url_for("main.login_caretaker"))
-
-        except UniqueViolation:
-            conn.rollback()
-            error = f"❗ The username <strong>{username}</strong> is already in use. Please choose a different one."
+        if not is_valid_username(username):
+            error = "Username can only contain letters, numbers, spaces, and underscores (2–30 characters)."
+        elif not is_valid_password(password):
+            error = "Password can only contain letters, numbers, spaces, and underscores (2–30 characters)."
+        elif not is_valid_name(name):
+            error = "Name can only contain letters and spaces (2–30 characters)."
+        else:
+            try:
+                cur.execute(
+                    "INSERT INTO caretakers (username, name, password, area) VALUES (%s, %s, %s, %s)",
+                    (username, name, password, area_id)
+                )
+                conn.commit()
+                cur.close()
+                conn.close()
+                return redirect(url_for("main.login_caretaker"))
+            except UniqueViolation:
+                conn.rollback()
+                error = f"The username <strong>{username}</strong> is already in use. Please choose a different one."
 
     # Fetch areas again for the form
     conn = get_db_connection()
@@ -64,20 +71,29 @@ def login_caretaker():
         username = request.form["username"]
         password = request.form["password"]
 
-        conn = get_db_connection()
-        cur = conn.cursor()
-        cur.execute("SELECT id, name FROM caretakers WHERE username = %s AND password = %s", (username, password))
-        user = cur.fetchone()
-        cur.close()
-        conn.close()
-
-        if user:
-            user_id, name = user
-            session["caretaker_id"] = user_id
-            session["caretaker_name"] = name
-            return redirect(url_for("main.home"))
+        if not is_valid_username(username):
+            error = "Username can only contain letters, numbers, spaces, and underscores (2–30 characters)."
+            cur.close()
+            conn.close()
+        elif not is_valid_password(password):
+            error = "Password can only contain letters, numbers, spaces, and underscores (2–30 characters)."
+            cur.close()
+            conn.close()
         else:
-            error = "Wrong username or password"
+            conn = get_db_connection()
+            cur = conn.cursor()
+            cur.execute("SELECT id, name FROM caretakers WHERE username = %s AND password = %s", (username, password))
+            user = cur.fetchone()
+            cur.close()
+            conn.close()
+
+            if user:
+                user_id, name = user
+                session["caretaker_id"] = user_id
+                session["caretaker_name"] = name
+                return redirect(url_for("main.home"))
+            else:
+                error = "Wrong username or password"
 
     return render_template("login_caretaker.html", error=error)
 
@@ -107,26 +123,31 @@ def register_pet():
         description = request.form["description"]
         caretaker_id = session["caretaker_id"]
 
-        # Handle uploaded file
-        file = request.files["image"]
-        if not file:
-            return "Image required", 400
-        
-        filename = secure_filename(file.filename)
-        unique_name = f"{uuid.uuid4().hex}_{filename}"
-        file_path = os.path.join(UPLOAD_FOLDER, unique_name)
-        file.save(file_path)
-        image_url = f"/{file_path}"
+        if not is_valid_name(name):
+            return "Pet name can only contain letters and spaces (2–30 characters).", 400
+        elif not is_valid_description(description):
+            return "Description can only contain letters, numbers, spaces, and the characters !?() æøåÆØÅ (2–30 characters).", 400
+        else:
+            # Handle uploaded file
+            file = request.files["image"]
+            if not file:
+                return "Image required", 400
+            
+            filename = secure_filename(file.filename)
+            unique_name = f"{uuid.uuid4().hex}_{filename}"
+            file_path = os.path.join(UPLOAD_FOLDER, unique_name)
+            file.save(file_path)
+            image_url = f"/{file_path}"
 
-        cur.execute("""
-            INSERT INTO pets (name, age, species, gender, image_url, description, caretaker_id)
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
-        """, (name, age, species, gender, image_url, description, caretaker_id))
+            cur.execute("""
+                INSERT INTO pets (name, age, species, gender, image_url, description, caretaker_id)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+            """, (name, age, species, gender, image_url, description, caretaker_id))
 
-        conn.commit()
-        cur.close()
-        conn.close()
-        return redirect(url_for("main.view_owned_pets"))
+            conn.commit()
+            cur.close()
+            conn.close()
+            return redirect(url_for("main.view_owned_pets"))
 
     cur.execute("SELECT id, name FROM species")
     species = cur.fetchall()
@@ -192,7 +213,6 @@ def edit_preferences(pet_id):
     cur.close()
     conn.close()
     return render_template("edit_preferences.html", pet=pet, species=species, gender=gender)
-
 
 @bp.route("/delete_pet/<int:pet_id>", methods=["POST"])
 def delete_pet(pet_id):
@@ -324,3 +344,16 @@ def find_matches(pet_id):
     conn.close()
 
     return render_template("matches.html", matches=matches, pet_name=pet_id)
+
+def is_valid_username(username):
+    return re.fullmatch(r"^[a-zA-Z0-9_ æøåÆØÅ]{2,30}$", username) is not None
+
+def is_valid_password(password):
+    return re.fullmatch(r"^[a-zA-Z0-9_ æøåÆØÅ]{2,30}$", password) is not None
+
+def is_valid_description(description):
+    return re.fullmatch(r"^[a-zA-Z0-9 æøåÆØÅ.,!?()'\-]{2,300}$", description) is not None
+
+def is_valid_name(name):
+    return re.fullmatch(r"^[a-zA-Z æøåÆØÅ]{2,30}$", name) is not None
+
