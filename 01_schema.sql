@@ -12,6 +12,7 @@ CREATE TABLE caretakers (
     username VARCHAR(255) NOT NULL UNIQUE,
     name VARCHAR(255) NOT NULL,
     password VARCHAR(255) NOT NULL,
+    phone VARCHAR(20) NOT NULL UNIQUE,
     area INT REFERENCES areas(id)
 );
 
@@ -63,13 +64,6 @@ CREATE TABLE age_pref (
     pet_id INT REFERENCES pets(id),
     age_range_id INT REFERENCES age_range(id),
     PRIMARY KEY (pet_id, age_range_id)
-);
-
--- Likes (pet-to-pet)
-CREATE TABLE likes (
-    pet_id INT REFERENCES pets(id),
-    liked_pet_id INT REFERENCES pets(id),
-    PRIMARY KEY (pet_id, liked_pet_id)
 );
 
 -- Owns (caretaker-to-pet) [optional, implicit through caretaker_id]

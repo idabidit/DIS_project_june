@@ -31,6 +31,7 @@ def register_caretaker():
         username = request.form["username"]
         name = request.form["name"]
         password = request.form["password"]
+        phone = request.form["phone"]
         area_id = request.form["area"]
 
         if not is_valid_username(username):
