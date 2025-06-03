@@ -326,7 +326,7 @@ def find_matches(pet_id):
     query = """
         SELECT pets.id, pets.name, pets.age, pets.description, pets.image_url,
                species.name AS pet_species, gender.name AS pet_gender,
-               caretakers.username
+               caretakers.username, caretakers.phone
         FROM pets
         JOIN species ON pets.species = species.id
         JOIN gender ON pets.gender = gender.id
