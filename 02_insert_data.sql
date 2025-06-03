@@ -2,7 +2,7 @@ INSERT INTO caretakers (username, name, password, phone, area) VALUES
 ('Freja', 'Freja', '1234', '1234-8090', 2),
 ('Mikkel', 'Mikkel', '1234','1234-8091' , 4),
 ('Sofie', 'Sofie', '1234','1234-8092', 3),
-('Lukas', 'Lukas', '1234', '1234-8093' 1),
+('Lukas', 'Lukas', '1234', '1234-8093', 1),
 ('Ida', 'Ida', '1234', '1234-8094', 5),
 ('Magnus', 'Magnus', '1234', '1234-8095', 1),
 ('Emma', 'Emma', '1234', '1234-8096', 1),
