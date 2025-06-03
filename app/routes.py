@@ -231,7 +231,13 @@ def delete_pet(pet_id):
         file_path = image_url.lstrip("/")  # remove leading slash
 
         # Delete the database entry
+        cur.execute("DELETE FROM species_pref WHERE pet_id = %s", (pet_id,))
+        cur.execute("DELETE FROM gender_pref WHERE pet_id = %s", (pet_id,))
+        cur.execute("DELETE FROM age_pref WHERE pet_id = %s", (pet_id,))
+        cur.execute("DELETE FROM owns WHERE pet_id = %s AND caretaker_id = %s", (pet_id, session["caretaker_id"]))
         cur.execute("DELETE FROM pets WHERE id = %s AND caretaker_id = %s", (pet_id, session["caretaker_id"]))
+
+
         conn.commit()
         cur.close()
         conn.close()
