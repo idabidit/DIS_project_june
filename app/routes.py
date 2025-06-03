@@ -43,8 +43,8 @@ def register_caretaker():
         else:
             try:
                 cur.execute(
-                    "INSERT INTO caretakers (username, name, password, area) VALUES (%s, %s, %s, %s)",
-                    (username, name, password, area_id)
+                    "INSERT INTO caretakers (username, name, password, phone, area) VALUES (%s, %s, %s, %s, %s)",
+                    (username, name, password, phone, area_id)
                 )
                 conn.commit()
                 cur.close()
