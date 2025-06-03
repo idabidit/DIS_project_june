@@ -28,3 +28,6 @@ Password: 1234
 or
 User: Mathilde
 Password: 1234
+
+## E/R-Diagram
+ER_diagram.jpg is located in the root folder of the repo
