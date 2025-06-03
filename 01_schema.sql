@@ -1,4 +1,4 @@
-DROP TABLE IF EXISTS likes, owns, gender_pref, species_pref, age_pref, caretakers, pets, areas, species, gender, age_range CASCADE;
+DROP TABLE IF EXISTS likes, owns, gender_pref, species_pref, age_pref, caretakers, pets, areas, species, gender, CASCADE;
 
 -- Area
 CREATE TABLE areas (
@@ -28,13 +28,6 @@ CREATE TABLE species (
     name VARCHAR(255) NOT NULL UNIQUE
 );
 
--- Age Range (for preference)
-CREATE TABLE age_range (
-    id SERIAL PRIMARY KEY,
-    age_from INT NOT NULL,
-    age_to INT NOT NULL
-);
-
 -- Pets
 CREATE TABLE pets (
     id SERIAL PRIMARY KEY,
@@ -61,9 +54,9 @@ CREATE TABLE gender_pref (
 );
 
 CREATE TABLE age_pref (
-    pet_id INT REFERENCES pets(id),
-    age_range_id INT REFERENCES age_range(id),
-    PRIMARY KEY (pet_id, age_range_id)
+    pet_id INT PRIMARY KEY REFERENCES pets(id),
+    age_from INT NOT NULL,
+    age_to INT NOT NULL
 );
 
 -- Owns (caretaker-to-pet) [optional, implicit through caretaker_id]

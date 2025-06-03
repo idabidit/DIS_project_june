@@ -164,20 +164,26 @@ def edit_preferences(pet_id):
     if "caretaker_id" not in session:
         return redirect(url_for("main.login_caretaker"))
 
+    error = None
     caretaker_id = session["caretaker_id"]
     conn = get_db_connection()
     cur = conn.cursor()
 
     # Fetch current preferences + basic pet info to verify ownership
     cur.execute("""
-        SELECT pets.id, pets.name,
-               sp.id AS pref_species,
-               g.id AS pref_gender
+        SELECT 
+            pets.id,     
+            pets.name,
+            SP.id AS pref_species,
+            G.id AS pref_gender,
+            AP.age_from,
+            AP.age_to
         FROM pets
         LEFT JOIN species_pref ON pets.id = species_pref.pet_id
-        LEFT JOIN species AS sp ON species_pref.species_id = sp.id
+        LEFT JOIN species AS SP ON species_pref.species_id = SP.id
         LEFT JOIN gender_pref ON pets.id = gender_pref.pet_id
-        LEFT JOIN gender AS g ON gender_pref.gender_id = g.id
+        LEFT JOIN gender AS G ON gender_pref.gender_id = G.id
+        LEFT JOIN age_pref AS AP ON pets.id = AP.pet_id
         WHERE pets.id = %s AND pets.caretaker_id = %s
     """, (pet_id, caretaker_id))
 
@@ -195,25 +201,33 @@ def edit_preferences(pet_id):
     if request.method == "POST":
         pref_species = request.form.get("pref_species")
         pref_gender = request.form.get("pref_gender")
+        age_from = request.form.get("age_from")
+        age_to = request.form.get("age_to")
 
         # Clear old preferences
         cur.execute("DELETE FROM species_pref WHERE pet_id = %s", (pet_id,))
         cur.execute("DELETE FROM gender_pref WHERE pet_id = %s", (pet_id,))
+        cur.execute("DELETE FROM age_pref WHERE pet_id = %s", (pet_id,))
 
-        # Insert new preferences if provided
+        # Insert new preferences
         if pref_species:
             cur.execute("INSERT INTO species_pref (pet_id, species_id) VALUES (%s, %s)", (pet_id, pref_species))
         if pref_gender:
             cur.execute("INSERT INTO gender_pref (pet_id, gender_id) VALUES (%s, %s)", (pet_id, pref_gender))
-
-        conn.commit()
-        cur.close()
-        conn.close()
-        return redirect(url_for("main.view_owned_pets"))
+        if age_from and age_to:
+            if int(age_to) > int(age_from):
+                cur.execute("INSERT INTO age_pref (pet_id, age_from, age_to) VALUES (%s, %s, %s)", (pet_id, age_from, age_to))
+            else:
+                error = "Invalid age range."
+        if not error:
+            conn.commit()
+            cur.close()
+            conn.close()
+            return redirect(url_for("main.view_owned_pets"))
 
     cur.close()
     conn.close()
-    return render_template("edit_preferences.html", pet=pet, species=species, gender=gender)
+    return render_template("edit_preferences.html", pet=pet, species=species, gender=gender, error=error)
 
 @bp.route("/delete_pet/<int:pet_id>", methods=["POST"])
 def delete_pet(pet_id):
@@ -236,7 +250,6 @@ def delete_pet(pet_id):
         cur.execute("DELETE FROM age_pref WHERE pet_id = %s", (pet_id,))
         cur.execute("DELETE FROM owns WHERE pet_id = %s AND caretaker_id = %s", (pet_id, session["caretaker_id"]))
         cur.execute("DELETE FROM pets WHERE id = %s AND caretaker_id = %s", (pet_id, session["caretaker_id"]))
-
 
         conn.commit()
         cur.close()
@@ -273,7 +286,9 @@ def view_owned_pets():
             gender.name AS pet_gender, 
             species.name AS pet_species, 
             G.name AS pref_gender,
-            SP.name AS pref_species
+            SP.name AS pref_species,
+            age_pref.age_from,
+            age_pref.age_to
         FROM pets
         JOIN species ON pets.species = species.id
         JOIN gender ON pets.gender = gender.id
@@ -281,6 +296,7 @@ def view_owned_pets():
         LEFT JOIN species AS SP ON species_pref.species_id = SP.id
         LEFT JOIN gender_pref ON pets.id = gender_pref.pet_id
         LEFT JOIN gender AS G ON gender_pref.gender_id = G.id
+        LEFT JOIN age_pref ON pets.id = age_pref.pet_id
         WHERE pets.caretaker_id = %s
     """, (caretaker_id,))
     pets = cur.fetchall()
@@ -303,14 +319,18 @@ def find_matches(pet_id):
 
     # Get pet's preferences and caretaker_id for exclusion
     cur.execute("""
-        SELECT pets.caretaker_id,
-               sp.id AS pref_species,
-               g.id AS pref_gender
+        SELECT 
+            pets.caretaker_id,
+            SP.id AS pref_species,
+            G.id AS pref_gender,
+            AP.age_from,
+            AP.age_to
         FROM pets
         LEFT JOIN species_pref ON pets.id = species_pref.pet_id
-        LEFT JOIN species AS sp ON species_pref.species_id = sp.id
+        LEFT JOIN species AS SP ON species_pref.species_id = SP.id
         LEFT JOIN gender_pref ON pets.id = gender_pref.pet_id
-        LEFT JOIN gender AS g ON gender_pref.gender_id = g.id
+        LEFT JOIN gender AS G ON gender_pref.gender_id = G.id
+        LEFT JOIN age_pref AS AP ON pets.id = AP.pet_id
         WHERE pets.id = %s
     """, (pet_id,))
 
@@ -320,13 +340,20 @@ def find_matches(pet_id):
         conn.close()
         return "Pet not found", 404
 
-    pet_caretaker_id, pref_species, pref_gender = pet_info
+    pet_caretaker_id, pref_species, pref_gender, age_from, age_to = pet_info
 
     # Build query for matching pets
     query = """
-        SELECT pets.id, pets.name, pets.age, pets.description, pets.image_url,
-               species.name AS pet_species, gender.name AS pet_gender,
-               caretakers.username, caretakers.phone
+        SELECT 
+            pets.id, 
+            pets.name, 
+            pets.age, 
+            pets.description, 
+            pets.image_url,
+            species.name AS pet_species, 
+            gender.name AS pet_gender,
+            caretakers.username, 
+            caretakers.phone
         FROM pets
         JOIN species ON pets.species = species.id
         JOIN gender ON pets.gender = gender.id
@@ -343,6 +370,9 @@ def find_matches(pet_id):
     if pref_gender:
         query += " AND pets.gender = %s"
         params.append(pref_gender)
+    if age_from is not None and age_to is not None:
+        query += " AND pets.age BETWEEN %s AND %s"
+        params.extend([age_from, age_to])
 
     cur.execute(query, tuple(params))
     matches = cur.fetchall()

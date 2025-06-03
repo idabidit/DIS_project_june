@@ -28,15 +28,23 @@
             <h6><strong>Preferences</strong></h6>
             Species: {{ pet[8] }}<br>
             Gender: {{ pet[7] }}<br>
+            Ages: 
+            {% if pet[9] and pet[10] %}
+              {{ pet[9] }} – {{ pet[10] }}
+            {% else %}
+              Any
+            {% endif %}<br>
           </p>
 
           <!-- edit prefs -->
-          <a href="{{ url_for('main.edit_preferences', pet_id=pet[0]) }}" class="btn btn-primary w-100 mb-2">
+          <a href="{{ url_for('main.edit_preferences', pet_id=pet[0]) }}" 
+             class="btn btn-primary w-100 mb-2">
             Edit Preferences
           </a>
 
           <!-- find matches -->
-          <a href="{{ url_for('main.find_matches', pet_id=pet[0]) }}" class="btn btn-success w-100 mt-1">
+          <a href="{{ url_for('main.find_matches', pet_id=pet[0]) }}" 
+             class="btn btn-success w-100 mt-1">
             Find Match
           </a>
 

@@ -3,6 +3,10 @@
 {% block content %}
 <h2>Edit Preferences for {{ pet[1] }}</h2>
 
+{% if error %}
+<div class="alert alert-danger">{{ error }}</div>
+{% endif %}
+
 <form method="POST">
   <label>Preferred Species:</label><br>
   <select name="pref_species">
@@ -19,6 +23,21 @@
     <option value="{{ g[0] }}">{{ g[1] }}</option>
     {% endfor %}
   </select><br><br>
+
+  <label>Preferred Age Range:</label><br>
+  <input 
+    type="number" 
+    name="age_from" 
+    placeholder="From" 
+    min="0" 
+    value="{{ pet[4] if pet[4] is not none else '' }}">
+  &nbsp; - &nbsp;
+  <input 
+    type="number" 
+    name="age_to" 
+    placeholder="To" 
+    min="0" 
+    value="{{ pet[5] if pet[5] is not none else '' }}"><br><br>
 
   <button type="submit">Save Preferences</button>
 </form>
