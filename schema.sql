@@ -100,9 +100,9 @@ INSERT INTO species (name) VALUES
 ('Pig');
 
 -- Default areas in Denmark
-INSERT INTO areas (name) VALUES 
-('Hovedstaden'),
-('Midtjylland'),
-('Nordjylland'),
-('Sjælland'),
-('Syddanmark');
+INSERT INTO areas (name) VALUES
+('Capital Region'),
+('Central Jutland'),
+('North Jutland'),
+('Zealand'),
+('South Denmark');
